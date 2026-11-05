@@ -85,5 +85,5 @@ Done when: the preview link no longer shows the lane marker.
 - #3 Digest JSON (§2b), closed in 41d5b39
 - #4 Board link to digests (§2c), closed in 494b54e
 - #5 Route tests (§2d), closed in 03a36b9
-- #6 Preview for review (§3), closed; preview at https://pachciar3.github.io/mega-dev-s01-e04/
-- #7 Clean up preview marker (§4), closed with this commit
+- #6 Preview for review (§3), closed after the course review; preview at https://pachciar3.github.io/mega-dev-s01-e04/
+- #7 Clean up preview marker (§4), closed; marker removed from the same link (gh-pages 5f1404e)
