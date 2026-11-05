@@ -20,6 +20,13 @@ export function createApp(config: RigConfig = loadConfig()) {
     ),
   );
 
+  // Same data as the page, from the same readNight call (ADR 0001: they must never disagree).
+  app.get('/api/digest/:night', (c) => {
+    const digest = readNight(config.runsDir, c.req.param('night'));
+    if (!digest) return c.json({ error: 'no run log for that night' }, 404);
+    return c.json(digest);
+  });
+
   app.get('/digest/:night', (c) => {
     const digest = readNight(config.runsDir, c.req.param('night'));
     if (!digest) {
