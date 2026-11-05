@@ -1,7 +1,7 @@
 # rig
 
 Keeps a lane's lights on while nobody is in it: a heartbeat every minute, a status board, and
-(next) a morning digest of what ran overnight.
+a morning digest of what ran overnight (`/digest/<night>` for the page, `/api/digest/<night>` for JSON).
 
 ```sh
 cp .env.example .env   # set LANE_MARKER
