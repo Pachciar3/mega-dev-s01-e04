@@ -21,6 +21,7 @@ export type DigestRow = {
   owner: string | null;
   runs: number;
   retries: number;
+  fails: number;
   lastStatus: JobStatus;
   lastError: string | null;
   firstAt: string;
@@ -30,6 +31,8 @@ export type DigestRow = {
 export type NightDigest = {
   night: string;
   rows: DigestRow[];
+  // Valid lines by status, for the status board.
+  counts: Record<JobStatus, number>;
   // Lines that did not parse or did not match RunLine. Counted, never thrown.
   badLines: number;
 };
@@ -44,6 +47,7 @@ export function readNight(runsDir: string, night: string): NightDigest | null {
   if (!existsSync(path)) return null;
 
   const byJob = new Map<string, DigestRow>();
+  const counts: Record<JobStatus, number> = { ok: 0, retry: 0, fail: 0 };
   let badLines = 0;
 
   for (const raw of readFileSync(path, 'utf8').split(/\r?\n/)) {
@@ -55,6 +59,7 @@ export function readNight(runsDir: string, night: string): NightDigest | null {
       badLines++;
       continue;
     }
+    counts[line.status]++;
 
     const row = byJob.get(line.job);
     if (!row) {
@@ -63,6 +68,7 @@ export function readNight(runsDir: string, night: string): NightDigest | null {
         owner: line.owner,
         runs: 1,
         retries: line.status === 'retry' ? 1 : 0,
+        fails: line.status === 'fail' ? 1 : 0,
         lastStatus: line.status,
         lastError: line.error ?? null,
         firstAt: line.at,
@@ -73,6 +79,7 @@ export function readNight(runsDir: string, night: string): NightDigest | null {
 
     row.runs++;
     if (line.status === 'retry') row.retries++;
+    if (line.status === 'fail') row.fails++;
     row.lastStatus = line.status;
     if (line.owner !== null) row.owner = line.owner; // keep the latest known owner
     if (line.error !== undefined) row.lastError = line.error; // keep the latest error
@@ -81,7 +88,7 @@ export function readNight(runsDir: string, night: string): NightDigest | null {
   }
 
   const rows = [...byJob.values()].sort((a, b) => (a.job < b.job ? -1 : a.job > b.job ? 1 : 0));
-  return { night, rows, badLines };
+  return { night, rows, counts, badLines };
 }
 
 const STATUSES: ReadonlySet<string> = new Set(['ok', 'retry', 'fail']);

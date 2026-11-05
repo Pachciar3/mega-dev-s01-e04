@@ -27,6 +27,18 @@ describe('readNight on the real night 2026-10-28', () => {
     expect(night!.badLines).toBe(1);
   });
 
+  it('counts valid lines by status for the whole night', () => {
+    // 15 valid lines: 10 ok, 4 retry, 1 fail (the cut-off last line is not counted)
+    expect(night!.counts).toEqual({ ok: 10, retry: 4, fail: 1 });
+  });
+
+  it('counts failures per job', () => {
+    const backup = night!.rows.find((r) => r.job === 'notes/backup')!;
+    expect(backup.fails).toBe(1);
+    const fixtures = night!.rows.find((r) => r.job === 'fixtures/refresh')!;
+    expect(fixtures.fails).toBe(0);
+  });
+
   it('counts runs and retries per job', () => {
     const sync = night!.rows.find((r) => r.job === 'lane/sync')!;
     expect(sync.runs).toBe(8);
@@ -73,7 +85,12 @@ describe('readNight edge cases', () => {
 
   it('gives zero rows, not null, for an empty file', () => {
     writeFileSync(join(scratch, '2026-11-01.jsonl'), '');
-    expect(readNight(scratch, '2026-11-01')).toEqual({ night: '2026-11-01', rows: [], badLines: 0 });
+    expect(readNight(scratch, '2026-11-01')).toEqual({
+      night: '2026-11-01',
+      rows: [],
+      counts: { ok: 0, retry: 0, fail: 0 },
+      badLines: 0,
+    });
   });
 
   it('counts lines that are valid JSON but the wrong shape as bad', () => {
